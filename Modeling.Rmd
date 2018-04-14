@@ -1,0 +1,36 @@
+---
+title: "Modeling"
+author: "Alex Kan -lexokan"
+date: "April 14, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(stringr)
+library(data.table)
+```
+
+```{r}
+df <- fread("C:/Users/lexokan/Desktop/Yelp/sample4.csv") %>% 
+    select(-V1)
+```
+
+```{r}
+temp <- df %>% 
+    filter(city == "Las Vegas", str_detect(categories, "Restaurants")) %>% 
+    select(-c(city, text, categories, monday, tuesday, wednesday, thursday, friday, saturday, sunday))
+
+temp$date <- as.Date(temp$date, format = '%Y-%m-%d')
+temp$yelping_since <- as.Date(temp$yelping_since, format = '%Y-%m-%d')
+temp <- na.omit(temp)
+
+pca <- prcomp(temp)
+
+
+for(col in colnames(temp)) {
+    print(mean(temp[col]))
+}
+
+```
+

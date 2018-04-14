@@ -26,6 +26,7 @@ sample <- merge(sample, hours, by = "business_id", all = T)
 
 ```{r}
 sample <- fread("sample2.csv")
+
 df <-  sample
 df <- merge(df, user, by = "user_id")
 
