@@ -1,0 +1,41 @@
+---
+title: "Cleaning"
+author: "Alex Kan -lexokan"
+date: "April 11, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(data.table)
+```
+
+```{r, eval = F}
+sample <- fread("sample.csv")
+hours <- read.csv("C:/Users/lexokan/Desktop/Yelp/yelp_business_hours.csv", fill = T)
+business <- fread("C:/Users/lexokan/Desktop/Yelp/yelp_business.csv")
+user<- fread("C:/Users/lexokan/Desktop/Yelp/yelp_user.csv")
+```
+
+```{r, eval = F}
+sample <- merge(sample, business, by = "business_id", all = T)
+sample <- merge(sample, hours, by = "business_id", all = T)
+
+#write.csv(sample, "sample2.csv")
+```
+
+```{r}
+sample <- fread("sample2.csv")
+df <-  sample
+df <- merge(df, user, by = "user_id")
+
+#write.csv(df, "sample3.csv")
+```
+
+```{r}
+df <- read_csv("C:/Users/lexokan/Desktop/Yelp/sample3.csv")
+temp <- df %>% 
+    select(-c(X1, V1, business_id, review_id, user_id, neighborhood, state, name.y, friends, elite, name.x, address))
+
+#write.csv(temp, "sample4.csv")
+```
