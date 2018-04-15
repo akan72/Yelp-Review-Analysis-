@@ -23,14 +23,14 @@ temp <- df %>%
 
 temp$date <- as.Date(temp$date, format = '%Y-%m-%d')
 temp$yelping_since <- as.Date(temp$yelping_since, format = '%Y-%m-%d')
+temp$postal_code <- as.integer(temp$postal_code)
 temp <- na.omit(temp)
 
-pca <- prcomp(temp)
+```
 
+```{r}
+pca <- prcomp(temp %>% select(-c(date, yelping_since)))
 
-for(col in colnames(temp)) {
-    print(mean(temp[col]))
-}
-
+biplot(pca)
 ```
 
