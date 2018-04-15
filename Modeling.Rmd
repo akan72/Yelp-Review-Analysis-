@@ -29,8 +29,13 @@ temp <- na.omit(temp)
 ```
 
 ```{r}
-pca <- prcomp(temp %>% select(-c(date, yelping_since)))
+pca <- prcomp(temp %>% 
+                  select(-c(date, yelping_since)))
+
+bestPCs <- sort(pca$sdev, decreasing = T)[1:2]
 
 biplot(pca)
+
+plot(pca$x[, c(which(pca$sdev == bestPCs[1])[1], which(pca$sdev == bestPCs[2])[1])])
 ```
 
