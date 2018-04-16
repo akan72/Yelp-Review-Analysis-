@@ -11,32 +11,48 @@ library(data.table)
 ```
 
 ```{r, eval = F}
+# Read in original sample of 1/10 of Yelp Kaggle Datset 
 sample <- fread("sample.csv")
+
+# Read in kaggle tables 
 hours <- read.csv("C:/Users/lexokan/Desktop/Yelp/yelp_business_hours.csv", fill = T)
 business <- fread("C:/Users/lexokan/Desktop/Yelp/yelp_business.csv")
 user<- fread("C:/Users/lexokan/Desktop/Yelp/yelp_user.csv")
+
 ```
 
 ```{r, eval = F}
 sample <- merge(sample, business, by = "business_id", all = T)
 sample <- merge(sample, hours, by = "business_id", all = T)
+sample <- merge(sample, user, by = "user_id")
 
-#write.csv(sample, "sample2.csv")
+#write.csv(sample, "sample3.csv")
 ```
 
 ```{r}
-sample <- fread("sample2.csv")
-
-df <-  sample
-df <- merge(df, user, by = "user_id")
-
-#write.csv(df, "sample3.csv")
+df <- fread("C:/Users/lexokan/Desktop/Yelp/sample3.csv")
+vegas <- read.csv("data/vegasDemographics.csv")
+phoenix <- read.csv("data/phoenixDemographics.csv")
 ```
 
 ```{r}
-df <- read_csv("C:/Users/lexokan/Desktop/Yelp/sample3.csv")
-temp <- df %>% 
-    select(-c(X1, V1, business_id, review_id, user_id, neighborhood, state, name.y, friends, elite, name.x, address))
 
-#write.csv(temp, "sample4.csv")
+# Read in zipcodes of cities within a 30 mile radius of Las Vegas and Phoenix
+vegasZips <- as.vector(as.character(vegas$FIPS))
+phoenixZips <- as.vector(as.character(phoenix$FIPS))
+
+vegas <- df[, 2:51] %>% 
+    select(-c(V1, neighborhood, state, name.y, friends, elite, address)) %>% 
+    filter(str_detect(categories, "Restaurants"), postal_code %in% vegasZips) %>% 
+    select(-c(text, categories, monday, tuesday, wednesday, thursday, friday, saturday, sunday))
+
+
+phoenix <- df[, 2:51] %>% 
+    select(-c(V1, neighborhood, state, name.y, friends, elite, address)) %>% 
+    filter(str_detect(categories, "Restaurants"), postal_code %in% phoenixZips) %>% 
+    select(-c(text, categories, monday, tuesday, wednesday, thursday, friday, saturday, sunday))
+
+write.csv(vegas, "vegas.csv")
+write.csv(phoenix, "phoenix")
+
 ```
