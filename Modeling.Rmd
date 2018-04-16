@@ -12,8 +12,10 @@ library(data.table)
 ```
 
 ```{r}
-df <- fread("C:/Users/lexokan/Desktop/Yelp/sample4.csv") %>% 
-    select(-V1)
+#df <- fread("C:/Users/lexokan/Desktop/Yelp/sample4.csv") %>% 
+    #select(-V1)
+
+df <- fread("C:\\Users\\Ishan\\Desktop\\sample4.csv") %>% select(-V1)
 ```
 
 ```{r}
@@ -28,9 +30,14 @@ temp <- na.omit(temp)
 
 ```
 
+Different methods:
 ```{r}
 pca <- prcomp(temp %>% select(-c(date, yelping_since)))
 
 biplot(pca)
 ```
 
+```{r}
+
+
+```
