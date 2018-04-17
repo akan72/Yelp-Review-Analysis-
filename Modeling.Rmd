@@ -13,6 +13,9 @@ library(data.table)
 library(e1071)
 library(tree)
 
+library(MASS)
+librar(ROCR)
+
 set.seed(1)
 ```
 
@@ -68,7 +71,6 @@ az.test <- az[-train,]
 ```
 
 ```{r}
-library(MASS)
 qda.fit <- qda(rate~reviewCountBusiness, data = az.train)
 qda.fit
 
@@ -83,8 +85,6 @@ mean(qda.class != az.test$rate)
 ```
 
 ```{r, echo=FALSE}
-library(ROCR)
-
 qda.p <- prediction(qda.predict$posterior[,2], az.test$rate) %>%
   performance(measure = "tpr", x.measure = "fpr")
 
