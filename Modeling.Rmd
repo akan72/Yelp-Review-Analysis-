@@ -22,9 +22,9 @@ set.seed(1)
 ```
 
 ```{r}
-df <- read.csv("data/phoenixAg.csv")
+az <- read.csv("data/phoenixAg.csv")
 
-temp <- df %>% 
+temp <- az %>% 
     dplyr::select(-c(businessID, businessName, city))
 
 # Encode average review as 2 if less than 3, or 3 if >= 3 
