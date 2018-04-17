@@ -52,7 +52,7 @@ df_new$isAmerican <- ifelse(str_detect(df_new$categories, paste(c("American", "B
 df_new$isBar <- ifelse(str_detect(df_new$categories, paste(c("Bar", "Pub"),collapse = '|')),1,0)
 df_new$isBreakfast <- ifelse(str_detect(df_new$categories, paste(c("Breakfast", "Brunch", "Cafe", "Coffee", "Bakery"),collapse = '|')),1,0)
 
-write.csv(df_new, "data/phoenixAg.csv")
+#write.csv(df_new, "data/phoenixAg.csv")
 
 ```
 
