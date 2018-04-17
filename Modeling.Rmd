@@ -14,11 +14,15 @@ library(data.table)
 ```{r}
 df <- fread("C:/Users/lexokan/Desktop/Yelp/sample4.csv") %>% 
     select(-V1)
+
 temp <- df
 temp$date <- as.Date(temp$date, format = '%Y-%m-%d')
 temp$yelping_since <- as.Date(temp$yelping_since, format = '%Y-%m-%d')
 temp$postal_code <- as.integer(temp$postal_code)
-temp <- na.omit(temp)
+
+
+# Number of unique business ids in phoenix 
+length(unique(phoenix$businessID))
 ```
 
 ```{r}

@@ -31,28 +31,57 @@ sample <- merge(sample, user, by = "user_id")
 
 ```{r}
 df <- fread("C:/Users/lexokan/Desktop/Yelp/sample3.csv")
-vegas <- read.csv("data/vegasDemographics.csv")
-phoenix <- read.csv("data/phoenixDemographics.csv")
+vegasDemographics <- read.csv("data/vegasDemographics.csv")
+phoenixDemographics <- read.csv("data/phoenixDemographics.csv")
 ```
 
 ```{r}
+vegasDemographics$FIPS <- as.character(vegasDemographics$FIPS)
+phoenixDemographics$FIPS <- as.character(phoenixDemographics$FIPS)
+colnames(vegasDemographics)[2] <- "postal_code"
+colnames(phoenixDemographics)[2] <- "postal_code"
 
-# Read in zipcodes of cities within a 30 mile radius of Las Vegas and Phoenix
-vegasZips <- as.vector(as.character(vegas$FIPS))
-phoenixZips <- as.vector(as.character(phoenix$FIPS))
+# Read in zipcodes of cities within a 30 mile radius of Las Vegas demograhpics and Phoenix Demograhpics
 
 vegas <- df[, 2:51] %>% 
     select(-c(V1, neighborhood, state, name.y, friends, elite, address)) %>% 
-    filter(str_detect(categories, "Restaurants"), postal_code %in% vegasZips) %>% 
-    select(-c(text, categories, monday, tuesday, wednesday, thursday, friday, saturday, sunday))
+    filter(str_detect(categories, "Restaurants"), postal_code %in% vegasDemographics$postal_code) %>% 
+    select(-c(text, categories, monday, tuesday, wednesday, thursday, friday, saturday, sunday)) %>% 
+    merge(., vegasDemographics, by = "postal_code", all = T) %>% 
+    select(-Name) %>% 
+    na.omit(temp)
+
 
 
 phoenix <- df[, 2:51] %>% 
     select(-c(V1, neighborhood, state, name.y, friends, elite, address)) %>% 
-    filter(str_detect(categories, "Restaurants"), postal_code %in% phoenixZips) %>% 
-    select(-c(text, categories, monday, tuesday, wednesday, thursday, friday, saturday, sunday))
+    filter(str_detect(categories, "Restaurants"), postal_code %in% phoenixDemographics$postal_code) %>% 
+    select(-c(text, categories, monday, tuesday, wednesday, thursday, friday, saturday, sunday)) %>% 
+    merge(., phoenixDemographics, by = "postal_code", all = T) %>% 
+    select(-Name) %>% 
+    na.omit(temp)
 
-write.csv(vegas, "vegas.csv")
-write.csv(phoenix, "phoenix")
+#stars.y = business
+#average_starts = per used 
+
+colnames(phoenix) <- c("zip", "userID", "businessID", "reviewID", "reviewStars", "date", "usefulBusi", "funnyBusi",
+                       "coolBusi", "businessName", "city", "lat", "long", "averageReviewBusiness", "reviewCountBusiness",
+                       "isOpen", "reviewCountUser", "yelpingSince", "usefulUser", "funnyUser", "coolUser", "fans",
+                       "averageReviewUser", "hotComp", "moreComp", "profileComp", "cuteComp", "listComp", "noteComp",
+                       "plainComp", "coolComp", "funnyComp", "writerComp", "photosComp", "percAsian", "percBlack",
+                       "percWhite", "percHispanic", "percNHW", "zipPopulation", "zipYouthPopulation", 
+                       "medianIncome", "percBachelors")
+
+colnames(vegas) <- c("zip", "userID", "businessID", "reviewID", "reviewStars", "date", "usefulBusi", "funnyBusi",
+                       "coolBusi", "businessName", "city", "lat", "long", "averageReviewBusiness", "reviewCountBusiness",
+                       "isOpen", "reviewCountUser", "yelpingSince", "usefulUser", "funnyUser", "coolUser", "fans",
+                       "averageReviewUser", "hotComp", "moreComp", "profileComp", "cuteComp", "listComp", "noteComp",
+                       "plainComp", "coolComp", "funnyComp", "writerComp", "photosComp", "percAsian", "percBlack",
+                       "percWhite", "percHispanic", "percNHW", "zipPopulation", "zipYouthPopulation", 
+                       "medianIncome", "percBachelors")
+
+#write.csv(phoenix, "data/phoenix.csv")
+#write.csv(vegas, "data/vegas.csv")
 
 ```
+
