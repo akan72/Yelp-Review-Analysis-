@@ -1,43 +1,114 @@
 ---
 title: "Modeling"
-author: "Alex Kan -lexokan"
-date: "April 14, 2018"
-output: html_document
+author: "Alex Kan, Jessica Ho, Katherine Wang, Ishan Shah, Svetak Sundhar"
+date: "April 20, 2018"
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(stringr)
 library(data.table)
+
+library(e1071)
+library(tree)
+
+library(MASS)
+library(ROCR)
+
+set.seed(1)
 ```
 
 ```{r}
-#df <- fread("C:/Users/lexokan/Desktop/Yelp/sample4.csv") %>% 
-    #select(-V1)
+df <- read.csv("data/phoenixAg.csv")
+temp <- df
 
-df <- fread("C:\\Users\\Ishan\\Desktop\\sample4.csv") %>% select(-V1)
-```
-
-```{r}
 temp <- df %>% 
-    filter(city == "Las Vegas", str_detect(categories, "Restaurants")) %>% 
-    select(-c(city, text, categories, monday, tuesday, wednesday, thursday, friday, saturday, sunday))
+    dplyr::select(-c(businessID, businessName, city))
 
-temp$date <- as.Date(temp$date, format = '%Y-%m-%d')
-temp$yelping_since <- as.Date(temp$yelping_since, format = '%Y-%m-%d')
-temp$postal_code <- as.integer(temp$postal_code)
-temp <- na.omit(temp)
 
 ```
 
-Different methods:
-```{r}
-pca <- prcomp(temp %>% select(-c(date, yelping_since)))
+PCA:
+```{r, warning = F }
+pca <- prcomp(temp)
 
 biplot(pca)
 ```
 
+SVM: 
 ```{r}
-
+#svm.mod <- svm(data = temp, avgReviewStars~., kernel = "linear", scale = F, cost = .1)
 
 ```
+Decision Trees: 
+```{r}
+tree.mod <- tree(data = temp %>% 
+                     dplyr::select(-c(averageReviewBusiness, avgUserPastReview)), avgReviewStars ~.)
+
+#plot(tree(data = temp,
+#     as.formula(paste("avgReviewStars", "~",
+#                      paste(colnames(temp)[8:16], collapse = "+"),
+#                      sep = ""))))
+
+plot(tree.mod)
+text(tree.mod, pretty = 0)
+```
+
+Kmeans: 
+```{r}
+
+```
+
+Logistic Regression
+```{r}
+
+```
+
+# Quadratic Discriminant Analysis
+
+Quadratic Discriminant Analysis allows for non-linear (quadratic) decision boundaries, unlike Linear Discimrinant Analysis. QDA require the number of predictor variables (p) to be less then the sample size (n). We are assuming predictor variables X are drawn from a multivariate Gaussian (aka normal) distribution and that the covariance matrix can be different for each class so we must estimate the covariance matrix separately for each class. However, QDA is recommended if the training set is very large, so that the variance of the classifier is not a major concern, or if the assumption of a common covariance matrix is clearly untenable.
+
+First, we will define a binary variable for averageReviewBusiness. Ratings greater than 3 are considered good ratings and ratings below 3 are bad ratings.
+
+We will create the training and test sets(80%/20%).
+
+Now, we will run QDA and look at the test MSE (mean squared error).
+```{r}
+az <- read.csv("data/phoenixAg.csv")
+az$rate <- ifelse(az$averageReviewBusiness < 2, 0,1)
+
+#Create Train & Test Sets
+train <- sample(1:(0.80*nrow(az)),replace=FALSE)
+az.train <- az[train,]
+az.test <- az[-train,]
+```
+
+```{r}
+qda.fit <- qda(rate~reviewCountBusiness, data = az.train)
+qda.fit
+
+#predict
+qda.predict <- predict(qda.fit, newdata=az.test)
+qda.class <- qda.predict$class
+#Confusion matrix
+table(qda.class,az.test$rate)
+
+#Overall fraction of incorrect test predictions (MSE: mean squared error)
+mean(qda.class != az.test$rate)
+```
+
+```{r, echo=FALSE}
+qda.p <- prediction(qda.predict$posterior[,2], az.test$rate) %>%
+  performance(measure = "tpr", x.measure = "fpr")
+
+plot(qda.p, col = "red")
+
+#QDA AUC
+prediction(qda.predict$posterior[,2], az.test$rate) %>%
+  performance(measure = "auc") %>%
+  .@y.values
+```
+
