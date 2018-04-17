@@ -105,37 +105,36 @@ We will create the training and test sets(80%/20%).
 
 Now, we will run QDA and look at the test MSE (mean squared error).
 ```{r}
-az <- read.csv("data/phoenixAg.csv")
-az$rate <- ifelse(az$averageReviewBusiness < 3, 0,1)
+#az$rate <- ifelse(az$averageReviewBusiness < 3, 0,1)
 
 #Create Train & Test Sets
 train <- sample(1:(0.80*nrow(az)),replace=FALSE)
-az.train <- az[train,]
-az.test <- az[-train,]
+az.train <- temp[train,]
+az.test <- temp[-train,]
 ```
 
 ```{r}
-qda.fit <- qda(rate~reviewCountBusiness, data = az.train)
+qda.fit <- qda(averageReviewBusiness~reviewCountBusiness, data = az.train)
 qda.fit
 
 #predict
 qda.predict <- predict(qda.fit, newdata=az.test)
 qda.class <- qda.predict$class
 #Confusion matrix
-table(qda.class,az.test$rate)
+table(qda.class,az.test$averageReviewBusiness)
 
 #Overall fraction of incorrect test predictions (MSE: mean squared error)
-mean(qda.class != az.test$rate)
+mean(qda.class != az.test$averageReviewBusiness)
 ```
 
 ```{r, echo=FALSE}
-qda.p <- prediction(qda.predict$posterior[,2], az.test$rate) %>%
+qda.p <- prediction(qda.predict$posterior[,2], az.test$averageReviewBusiness) %>%
   performance(measure = "tpr", x.measure = "fpr")
 
-plot(qda.p, col = "red")
+plot(qda.p, col = "red",main="QDA ROC Curve")
 
 #QDA AUC
-prediction(qda.predict$posterior[,2], az.test$rate) %>%
+prediction(qda.predict$posterior[,2], az.test$averageReviewBusiness) %>%
   performance(measure = "auc") %>%
   .@y.values
 ```
