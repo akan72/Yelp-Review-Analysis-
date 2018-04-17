@@ -17,18 +17,16 @@ set.seed(1)
 ```
 
 ```{r}
-df <- read.csv("data/phoenix.csv")
+df <- read.csv("data/phoenixAg.csv")
 temp <- df
+
+temp <- temp %>% 
+    select(-c(businessID, businessName, city))
 
 ```
 
 PCA:
 ```{r}
-temp$yelpingSince <- as.Date(temp$yelpingSince)
-temp$date <- as.Date(temp$date)
-
-temp <- temp %>% 
-    select(-c(date, yelpingSince, userID, businessID, reviewID, businessName, city))
 pca <- prcomp(temp)
 
 biplot(pca)
@@ -36,10 +34,24 @@ biplot(pca)
 
 SVM: 
 ```{r}
-svm.mod <- svm(data = temp, reviewStars~., kernel = "linear", scale = F, cost = .1)
+svm.mod <- svm(data = temp, avgReviewStars~., kernel = "linear", scale = F, cost = .1)
 ```
 Decision Trees: 
 ```{r}
-tree.mod <- tree(data = temp, reviewStars~.)
+tree.mod <- tree(data = temp %>% 
+                     select(-c(averageReviewBusiness, avgUserPastReview)), avgReviewStars ~.)
+
+#plot(tree(data = temp,
+#     as.formula(paste("avgReviewStars", "~",
+#                      paste(colnames(temp)[8:16], collapse = "+"),
+#                      sep = ""))))
+
+plot(tree.mod)
+text(tree.mod, pretty = 0)
+```
+
+Kmeans: 
+```{r}
+
 ```
 
