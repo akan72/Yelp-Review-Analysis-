@@ -6,9 +6,16 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-library()
+library(tidyverse)
+```
+
+```{r}
 df <- read.csv("data/phoenix.csv")
 
+df$date <- as.Date(df$date)
+df$yelpingSince <- as.Date(df$yelpingSince)
+
+df$daysSinceJoined <- df$date - df$yelpingSince
 ```
 
 ```{r}
@@ -19,7 +26,11 @@ df_firstone <- df_firstone[!duplicated(df_firstone$businessID),]
 ```
 
 ```{r}
+df_aggregate <- df %>% 
+    group_by(businessID) %>% 
+    summarise(avgReviewStars = mean(reviewStars), avgUserPastReview = mean(averageReviewUser), avgDaysSinceJoined = mean(daysSinceJoined), sumUsefulRev = sum(usefulBusi), sumFunny = sum(funnyBusi), sumCool = sum(coolBusi), sumUserReviews = sum(reviewCountUser), sumUsefulUser = sum(usefulUser), sumFunnyUser = sum(funnyUser), sumCoolUser = sum(coolUser), sumFans = sum(fans), sumHotComp = sum(hotComp), sumMoreComp = sum(moreComp), sumProfileComp = sum(profileComp), sumCuteComp = sum(cuteComp), sumListComp = sum(listComp), sumNoteComp = sum(noteComp), sumPlainComp = sum(plainComp), sumCoolComp = sum(coolComp), sumFunnyComp = sum(funnyComp), sumWriterComp = sum(writerComp), sumPhotoComp = sum(photosComp) )
 
+df_final <- merge(df_firstone, df_aggregate, by = "businessID")
 
 ```
 
