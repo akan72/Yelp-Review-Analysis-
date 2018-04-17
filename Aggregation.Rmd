@@ -6,12 +6,20 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-
+library()
 df <- read.csv("data/phoenix.csv")
 
 ```
 
-```{r cars}
-summary(cars)
+```{r}
+
+df_firstone <- df[,c(2,4,11:17,36:44)]
+df_firstone <- df_firstone[!duplicated(df_firstone$businessID),]
+
+```
+
+```{r}
+
+
 ```
 
