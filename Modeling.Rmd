@@ -140,3 +140,22 @@ prediction(qda.predict$posterior[,2], az.test$rate) %>%
   .@y.values
 ```
 
+```{r}
+#Remerge with categories
+
+#business <- read.csv("C:\\Users\\Ishan\\Desktop\\yelp_business.csv")
+
+business_small <- dplyr::select(business, business_id, categories)
+colnames(business_small)[1] = "businessID"
+
+df_new <- merge(df, business_small, by = "businessID")
+
+df_new$isFastFood <- ifelse(str_detect(df_new$categories, "Fast Food"), 1, 0)
+df_new$isItalian <- ifelse(str_detect(df_new$categories, paste(c("Italian", "Pizza", "Pasta"),collapse = '|')),1,0)
+df_new$isHispanic <- ifelse(str_detect(df_new$categories, paste(c("Mexican", "Spanish", "Tacos","Burritos", "Hispanic"),collapse = '|')),1,0)
+df_new$isAsian <- ifelse(str_detect(df_new$categories, paste(c("Japanese", "Sushi", "Chinese","Filipino", "Korean","Asian Fusion", "Mediterranean", "Indian", "Vietnamese", "Thai"),collapse = '|')),1,0)
+df_new$isAmerican <- ifelse(str_detect(df_new$categories, paste(c("American", "Barbeque", "Diners", "Barbecue", "Burgers"),collapse = '|')),1,0)
+df_new$isBar <- ifelse(str_detect(df_new$categories, paste(c("Bar", "Pub"),collapse = '|')),1,0)
+df_new$isBreakfast <- ifelse(str_detect(df_new$categories, paste(c("Breakfast", "Brunch", "Cafe", "Coffee", "Bakery"),collapse = '|')),1,0)
+```
+
