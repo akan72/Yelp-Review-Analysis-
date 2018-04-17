@@ -1,8 +1,10 @@
 ---
 title: "Modeling"
-author: "Alex Kan -lexokan"
-date: "April 14, 2018"
-output: html_document
+author: "Alex Kan, Jessica Ho, Katherine Wang, Ishan Shah, Svetak Sundhar"
+date: "April 20, 2018"
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -14,7 +16,7 @@ library(e1071)
 library(tree)
 
 library(MASS)
-librar(ROCR)
+library(ROCR)
 
 set.seed(1)
 ```
@@ -23,13 +25,14 @@ set.seed(1)
 df <- read.csv("data/phoenixAg.csv")
 temp <- df
 
-temp <- temp %>% 
-    select(-c(businessID, businessName, city))
+temp <- df %>% 
+    dplyr::select(-c(businessID, businessName, city))
+
 
 ```
 
 PCA:
-```{r}
+```{r, warning = F }
 pca <- prcomp(temp)
 
 biplot(pca)
@@ -37,12 +40,13 @@ biplot(pca)
 
 SVM: 
 ```{r}
-svm.mod <- svm(data = temp, avgReviewStars~., kernel = "linear", scale = F, cost = .1)
+#svm.mod <- svm(data = temp, avgReviewStars~., kernel = "linear", scale = F, cost = .1)
+
 ```
 Decision Trees: 
 ```{r}
 tree.mod <- tree(data = temp %>% 
-                     select(-c(averageReviewBusiness, avgUserPastReview)), avgReviewStars ~.)
+                     dplyr::select(-c(averageReviewBusiness, avgUserPastReview)), avgReviewStars ~.)
 
 #plot(tree(data = temp,
 #     as.formula(paste("avgReviewStars", "~",
