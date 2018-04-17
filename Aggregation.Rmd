@@ -31,7 +31,28 @@ df_aggregate <- df %>%
     group_by(businessID) %>% 
     summarise(avgReviewStars = mean(reviewStars), avgUserPastReview = mean(averageReviewUser), avgDaysSinceJoined = mean(daysSinceJoined), sumUsefulRev = sum(usefulBusi), sumFunny = sum(funnyBusi), sumCool = sum(coolBusi), sumUserReviews = sum(reviewCountUser), sumUsefulUser = sum(usefulUser), sumFunnyUser = sum(funnyUser), sumCoolUser = sum(coolUser), sumFans = sum(fans), sumHotComp = sum(hotComp), sumMoreComp = sum(moreComp), sumProfileComp = sum(profileComp), sumCuteComp = sum(cuteComp), sumListComp = sum(listComp), sumNoteComp = sum(noteComp), sumPlainComp = sum(plainComp), sumCoolComp = sum(coolComp), sumFunnyComp = sum(funnyComp), sumWriterComp = sum(writerComp), sumPhotoComp = sum(photosComp) )
 
-df_final <- merge(df_firstone, df_aggregate, by = "businessID")
+df_final <- merge(df_firstone, df_aggregate, by = "businessID", all = T)
+```
+
+```{r}
+#Remerge with categories
+
+#business <- read.csv("C:\\Users\\Ishan\\Desktop\\yelp_business.csv")
+
+business_small <- dplyr::select(business, business_id, categories)
+colnames(business_small)[1] = "businessID"
+
+df_new <- merge(df_final, business_small, by = "businessID")
+
+df_new$isFastFood <- ifelse(str_detect(df_new$categories, "Fast Food"), 1, 0)
+df_new$isItalian <- ifelse(str_detect(df_new$categories, paste(c("Italian", "Pizza", "Pasta"),collapse = '|')),1,0)
+df_new$isHispanic <- ifelse(str_detect(df_new$categories, paste(c("Mexican", "Spanish", "Tacos","Burritos", "Hispanic"),collapse = '|')),1,0)
+df_new$isAsian <- ifelse(str_detect(df_new$categories, paste(c("Japanese", "Sushi", "Chinese","Filipino", "Korean","Asian Fusion", "Mediterranean", "Indian", "Vietnamese", "Thai"),collapse = '|')),1,0)
+df_new$isAmerican <- ifelse(str_detect(df_new$categories, paste(c("American", "Barbeque", "Diners", "Barbecue", "Burgers"),collapse = '|')),1,0)
+df_new$isBar <- ifelse(str_detect(df_new$categories, paste(c("Bar", "Pub"),collapse = '|')),1,0)
+df_new$isBreakfast <- ifelse(str_detect(df_new$categories, paste(c("Breakfast", "Brunch", "Cafe", "Coffee", "Bakery"),collapse = '|')),1,0)
+
+write.csv(df_new, "data/phoenixAg.csv")
 
 ```
 
