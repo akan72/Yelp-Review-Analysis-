@@ -29,6 +29,11 @@ temp <- df %>%
 
 # Encode average review as 2 if less than 3, or 3 if >= 3 
 temp$averageReviewBusiness <- ifelse(temp$averageReviewBusiness < 3, 2, 3)
+
+#training and test sets
+train <- sample(1:(0.80*nrow(az)),replace=FALSE)
+az.train <- temp[train,]
+az.test <- temp[-train,]
 ```
 
 PCA:
@@ -108,16 +113,16 @@ Now, we will run QDA and look at the test MSE (mean squared error).
 #az$rate <- ifelse(az$averageReviewBusiness < 3, 0,1)
 
 #Create Train & Test Sets
-train <- sample(1:(0.80*nrow(az)),replace=FALSE)
-az.train <- temp[train,]
-az.test <- temp[-train,]
+#train <- sample(1:(0.80*nrow(az)),replace=FALSE)
+#az.train <- temp[train,]
+#az.test <- temp[-train,]
 ```
 
 ```{r}
 qda.fit <- qda(averageReviewBusiness~reviewCountBusiness, data = az.train)
 qda.fit
 
-#predict
+#predict QDA on test set
 qda.predict <- predict(qda.fit, newdata=az.test)
 qda.class <- qda.predict$class
 #Confusion matrix
