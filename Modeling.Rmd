@@ -23,19 +23,28 @@ set.seed(1)
 
 ```{r}
 df <- read.csv("data/phoenixAg.csv")
-temp <- df
 
 temp <- df %>% 
     dplyr::select(-c(businessID, businessName, city))
 
-
+# Encode average review as 2 if less than 3, or 3 if >= 3 
+temp$averageReviewBusiness <- ifelse(temp$averageReviewBusiness < 3, 2, 3)
 ```
 
 PCA:
 ```{r, warning = F }
+
+### More feature selection necessary for PCA 
+par(mfrow = c(1,2))
+
 pca <- prcomp(temp)
 
-biplot(pca)
+# Sort PCs by highest variance 
+bestPCs <- sort(pca$sdev, decreasing = T)[1:2]
+
+plot(pca$x[,], col = temp$averageReviewBusiness, xlab = "PC1", ylab = "PC2", main = "All PCs")
+plot(pca$x[pca$sdev == bestPCs, ], col = temp$averageReviewBusiness, xlab = "PC1", ylab = "PC2", main = "Two Highest Variance")
+
 ```
 
 SVM: 
@@ -43,6 +52,7 @@ SVM:
 #svm.mod <- svm(data = temp, avgReviewStars~., kernel = "linear", scale = F, cost = .1)
 
 ```
+
 Decision Trees: 
 ```{r}
 tree.mod <- tree(data = temp %>% 
@@ -58,8 +68,26 @@ text(tree.mod, pretty = 0)
 ```
 
 Kmeans: 
-```{r}
 
+K means supports our justification for splitting reviews into two categories (<3 and >=3). The "elbow" point on the Error vs. K (# of clusters) plot provides evidence.
+```{r}
+#euclidianGene <- as.data.frame(cbind(euclidianMeans$cluster, Subtypes))
+
+# Drop start labels and then perform kmeans 
+
+# See if k = 5 clusters best models the 5 different star levels
+wss <- sapply(1:5, 
+              function(k){kmeans(temp %>% 
+                                   dplyr::select(-averageReviewBusiness), k, nstart = 25)$tot.withinss})
+
+plot(1:5, wss,
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of Clusters",
+     ylab="Total Within-lusters Sum of Squares",
+     main="WSS vs. Number of Clusters")
+
+
+# confusion matrix 
 ```
 
 Logistic Regression
@@ -78,7 +106,7 @@ We will create the training and test sets(80%/20%).
 Now, we will run QDA and look at the test MSE (mean squared error).
 ```{r}
 az <- read.csv("data/phoenixAg.csv")
-az$rate <- ifelse(az$averageReviewBusiness < 2, 0,1)
+az$rate <- ifelse(az$averageReviewBusiness < 3, 0,1)
 
 #Create Train & Test Sets
 train <- sample(1:(0.80*nrow(az)),replace=FALSE)
