@@ -43,3 +43,4 @@ Decision Trees:
 tree.mod <- tree(data = temp, reviewStars~.)
 ```
 
+Logistic Regression
