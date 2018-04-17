@@ -1,0 +1,70 @@
+---
+title: "Quadratic Discriminant Analysis"
+author: "Jessica Ho, Katherine Wang, Svetak Sundhar, Alex Kan, and Ishan Shah"
+date: "4/16/2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+*Yelp Dataset for Phoenix,AZ*
+
+```{r}
+az <- read.csv("~/Documents/STOR_565/Project/Yelp-Review-Analysis/data/phoenix.csv")
+demo <- read.csv("~/Documents/STOR_565/Project/Yelp-Review-Analysis/data/phoenixDemographics.csv")
+```
+
+# Quadratic Discriminant Analysis (QDA)
+
+First, we will define a binary variable for averageReviewBusiness. Ratings greater than 3 are considered good ratings and ratings below 3 are bad ratings.
+
+We will create the training and test sets(80%/20%).
+
+```{r}
+set.seed(1)
+az$rate <- ifelse(az$averageReviewBusiness < 2, 0,1)
+
+#Create Train & Test Sets
+train <- sample(1:(0.80*nrow(az)),replace=FALSE)
+az.train <- az[train,]
+az.test <- az[-train,]
+```
+
+Quadratic Discriminant Analysis allows for non-linear (quadratic) decision boundaries, unlike Linear Discimrinant Analysis. QDA require the number of predictor variables (p) to be less then the sample size (n). We are assuming predictor variables X are drawn from a multivariate Gaussian (aka normal) distribution and that the covariance matrix can be different for each class so we must estimate the covariance matrix separately for each class. However, QDA is recommended if the training set is very large, so that the variance of the classifier is not a major concern, or if the assumption of a common covariance matrix is clearly untenable.
+
+Now, we will run QDA.
+```{r}
+library(MASS)
+qda.fit <- qda(averageReviewBusiness~reviewCountBusiness, data = az.train)
+qda.fit
+
+#predict
+qda.class <- predict(qda.fit, az.test)$class
+#Confusion matrix
+table(qda.class,az.test$averageReviewBusiness)
+
+#Overall fraction of incorrect test predictions (MSE: mean squared error)
+mean(qda.class!=az.test$averageReviewBusiness)
+```
+
+ROC Curves
+```{r,echo=FALSE}
+library(ROCR)
+
+par(mfrow=c(1, 2))
+
+prediction(test.predicted.lda$posterior[,2], test$default) %>%
+  performance(measure = "tpr", x.measure = "fpr") %>%
+  plot()
+
+prediction(test.predicted.qda$posterior[,2], test$default) %>%
+  performance(measure = "tpr", x.measure = "fpr") %>%
+  plot()
+```
+
