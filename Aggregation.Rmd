@@ -30,7 +30,10 @@ df_aggregate <- df %>%
     group_by(businessID) %>% 
     summarise(avgReviewStars = mean(reviewStars), avgUserPastReview = mean(averageReviewUser), avgDaysSinceJoined = mean(daysSinceJoined), sumUsefulRev = sum(usefulBusi), sumFunny = sum(funnyBusi), sumCool = sum(coolBusi), sumUserReviews = sum(reviewCountUser), sumUsefulUser = sum(usefulUser), sumFunnyUser = sum(funnyUser), sumCoolUser = sum(coolUser), sumFans = sum(fans), sumHotComp = sum(hotComp), sumMoreComp = sum(moreComp), sumProfileComp = sum(profileComp), sumCuteComp = sum(cuteComp), sumListComp = sum(listComp), sumNoteComp = sum(noteComp), sumPlainComp = sum(plainComp), sumCoolComp = sum(coolComp), sumFunnyComp = sum(funnyComp), sumWriterComp = sum(writerComp), sumPhotoComp = sum(photosComp) )
 
-df_final <- merge(df_firstone, df_aggregate, by = "businessID")
+df_final <- merge(df_firstone, df_aggregate, by = "businessID", all = T)
+
+
+write.csv(df_final, "data/phoenixAg.csv")
 
 ```
 
