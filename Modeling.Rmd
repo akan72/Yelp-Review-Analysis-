@@ -9,35 +9,37 @@ output: html_document
 library(tidyverse)
 library(stringr)
 library(data.table)
+
+library(e1071)
+library(tree)
+
+set.seed(1)
 ```
 
 ```{r}
-#df <- fread("C:/Users/lexokan/Desktop/Yelp/sample4.csv") %>% 
-    #select(-V1)
-
-df <- fread("C:\\Users\\Ishan\\Desktop\\sample4.csv") %>% select(-V1)
-```
-
-```{r}
-temp <- df %>% 
-    filter(city == "Las Vegas", str_detect(categories, "Restaurants")) %>% 
-    select(-c(city, text, categories, monday, tuesday, wednesday, thursday, friday, saturday, sunday))
-
-temp$date <- as.Date(temp$date, format = '%Y-%m-%d')
-temp$yelping_since <- as.Date(temp$yelping_since, format = '%Y-%m-%d')
-temp$postal_code <- as.integer(temp$postal_code)
-temp <- na.omit(temp)
+df <- read.csv("data/phoenix.csv")
+temp <- df
 
 ```
 
-Different methods:
+PCA:
 ```{r}
-pca <- prcomp(temp %>% select(-c(date, yelping_since)))
+temp$yelpingSince <- as.Date(temp$yelpingSince)
+temp$date <- as.Date(temp$date)
+
+temp <- temp %>% 
+    select(-c(date, yelpingSince, userID, businessID, reviewID, businessName, city))
+pca <- prcomp(temp)
 
 biplot(pca)
 ```
 
+SVM: 
 ```{r}
-
-
+svm.mod <- svm(data = temp, reviewStars~., kernel = "linear", scale = F, cost = .1)
 ```
+Decision Trees: 
+```{r}
+tree.mod <- tree(data = temp, reviewStars~.)
+```
+
