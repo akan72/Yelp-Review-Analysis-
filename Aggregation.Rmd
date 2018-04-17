@@ -1,0 +1,17 @@
+---
+title: "Aggregation"
+author: "Ishan Shah"
+date: "April 16, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+df <- read.csv("data/phoenix.csv")
+
+```
+
+```{r cars}
+summary(cars)
+```
+
