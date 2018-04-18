@@ -23,6 +23,7 @@ set.seed(1)
 
 ```{r}
 az <- read.csv("data/phoenixAg.csv")
+az$businessName <- gsub("\"", "", az$businessName)
 
 temp <- az %>% 
     dplyr::select(-c(businessID, businessName, city))
@@ -34,6 +35,9 @@ temp$averageReviewBusiness <- ifelse(temp$averageReviewBusiness < 3, 2, 3)
 train <- sample(1:(0.80*nrow(az)),replace=FALSE) 
 az.train <- temp[train,]
 az.test <- temp[-train,]
+
+az.train$rate <- ifelse(az.train$averageReviewBusiness < 3, 0, 1)
+az.test$rate <- ifelse(az.test$averageReviewBusiness < 3, 0, 1)
 ```
 
 PCA:
@@ -42,7 +46,8 @@ PCA:
 ### More feature selection necessary for PCA 
 par(mfrow = c(1,2))
 
-pca <- prcomp(temp)
+pca <- prcomp(temp %>% 
+                dplyr::select(-categories))
 
 # Sort PCs by highest variance 
 bestPCs <- sort(pca$sdev, decreasing = T)[1:2]
@@ -61,7 +66,7 @@ SVM:
 Decision Trees: 
 ```{r}
 tree.mod <- tree(data = temp %>% 
-                     dplyr::select(-c(averageReviewBusiness, avgUserPastReview)), avgReviewStars ~.)
+                     dplyr::select(-c(averageReviewBusiness, avgUserPastReview, categories)), avgReviewStars ~.)
 
 #plot(tree(data = temp,
 #     as.formula(paste("avgReviewStars", "~",
@@ -76,14 +81,14 @@ Kmeans:
 
 K means supports our justification for splitting reviews into two categories (<3 and >=3). The "elbow" point on the Error vs. K (# of clusters) plot provides evidence.
 ```{r}
-#euclidianGene <- as.data.frame(cbind(euclidianMeans$cluster, Subtypes))
+# euclidianGene <- as.data.frame(cbind(euclidianMeans$cluster, Subtypes))
 
 # Drop start labels and then perform kmeans 
 
 # See if k = 5 clusters best models the 5 different star levels
 wss <- sapply(1:5, 
-              function(k){kmeans(temp %>% 
-                                   dplyr::select(-averageReviewBusiness), k, nstart = 25)$tot.withinss})
+              function(k){kmeans((temp %>% 
+                                   dplyr::select(-c(averageReviewBusiness, categories))), k, nstart = 25)$tot.withinss})
 
 plot(1:5, wss,
      type="b", pch = 19, frame = FALSE, 
@@ -98,10 +103,14 @@ plot(1:5, wss,
 # Logistic Regression
 
 ```{r}
+<<<<<<< HEAD
 az.train$rate <- ifelse(az.train$avgReviewStars < 3.5, 0, 1)
 az.test$rate <- ifelse(az.test$avgReviewStars < 3.5, 0, 1)
 
 log.mod <- glm(rate~reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation + zipYouthPopulation + medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train, family = binomial)
+=======
+log.mod <- glm(rate~reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation + zipYouthPopulation + medianIncome + percBachelors + avgDaysSinceJoined, data = az.train, family = binomial)
+>>>>>>> a77ec3c418c017422d3dc43847fc307da096cb31
 summary(log.mod)
 
 #confusion matrix
@@ -132,7 +141,14 @@ Now, we will run QDA and look at the test MSE (mean squared error).
 ```
 
 ```{r}
+<<<<<<< HEAD
 qda.fit <- qda(rate~reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation + zipYouthPopulation + medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train)
+=======
+qda.fit <- qda(rate ~ reviewCountBusiness + isOpen + percAsian + percBlack + 
+    percHispanic + percNHW + zipPopulation + zipYouthPopulation + 
+    medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + 
+    isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train)
+>>>>>>> a77ec3c418c017422d3dc43847fc307da096cb31
 qda.fit
 
 #predict QDA on test set
@@ -155,24 +171,5 @@ plot(qda.p, col = "red",main="QDA ROC Curve")
 prediction(qda.predict$posterior[,2], az.test$averageReviewBusiness) %>%
   performance(measure = "auc") %>%
   .@y.values
-```
-
-```{r}
-#Remerge with categories
-
-#business <- read.csv("C:\\Users\\Ishan\\Desktop\\yelp_business.csv")
-
-business_small <- dplyr::select(business, business_id, categories)
-colnames(business_small)[1] = "businessID"
-
-df_new <- merge(df, business_small, by = "businessID")
-
-df_new$isFastFood <- ifelse(str_detect(df_new$categories, "Fast Food"), 1, 0)
-df_new$isItalian <- ifelse(str_detect(df_new$categories, paste(c("Italian", "Pizza", "Pasta"),collapse = '|')),1,0)
-df_new$isHispanic <- ifelse(str_detect(df_new$categories, paste(c("Mexican", "Spanish", "Tacos","Burritos", "Hispanic"),collapse = '|')),1,0)
-df_new$isAsian <- ifelse(str_detect(df_new$categories, paste(c("Japanese", "Sushi", "Chinese","Filipino", "Korean","Asian Fusion", "Mediterranean", "Indian", "Vietnamese", "Thai"),collapse = '|')),1,0)
-df_new$isAmerican <- ifelse(str_detect(df_new$categories, paste(c("American", "Barbeque", "Diners", "Barbecue", "Burgers"),collapse = '|')),1,0)
-df_new$isBar <- ifelse(str_detect(df_new$categories, paste(c("Bar", "Pub"),collapse = '|')),1,0)
-df_new$isBreakfast <- ifelse(str_detect(df_new$categories, paste(c("Breakfast", "Brunch", "Cafe", "Coffee", "Bakery"),collapse = '|')),1,0)
 ```
 

@@ -1,0 +1,31 @@
+---
+title: "Mapping"
+author: "Alex Kan, Jessica Ho, Katherine Wang, Ishan Shah, Svetak Sundhar"
+date: "April 17, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(leaflet)
+```
+
+```{r}
+az <- read.csv("data/phoenixAg.csv")
+az$businessName <- gsub("\"", "", az$businessName)
+```
+
+```{r}
+m <- leaflet() %>%
+  addTiles() %>%
+  addMarkers(lng=az$long[1:20], lat=az$lat[1:20], label = az$businessName[1:20]) %>%
+  setView(mean(az$long), mean(az$lat), zoom = 10)
+
+# clusterOptions = markerClusterOptions() within marker 
+# %>% fitBounds(lng1 = min(az$long), lng2 = max(az$long), lat1 = min(az$lat), lat2 = max(az$lat))
+
+m
+```
+

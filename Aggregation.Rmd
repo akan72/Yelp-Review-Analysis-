@@ -34,7 +34,7 @@ df_aggregate <- df %>%
 df_final <- merge(df_firstone, df_aggregate, by = "businessID", all = T)
 ```
 
-```{r}
+```{r, eval = F}
 #Remerge with categories
 
 #business <- read.csv("C:\\Users\\Ishan\\Desktop\\yelp_business.csv")
