@@ -2,7 +2,9 @@
 title: "Mapping"
 author: "Alex Kan, Jessica Ho, Katherine Wang, Ishan Shah, Svetak Sundhar"
 date: "April 17, 2018"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
