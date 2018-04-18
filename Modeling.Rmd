@@ -18,15 +18,17 @@ library(tree)
 library(MASS)
 library(ROCR)
 
+library(nnet)
+
 set.seed(1)
 ```
 
 ```{r}
 az <- read.csv("data/phoenixAg.csv")
-az$businessName <- gsub("\"", "", az$businessName)
+az$businessName <- gsub("\"", "", az$businessName )
 
 temp <- az %>% 
-    dplyr::select(-c(businessID, businessName, city))
+    dplyr::select(-c(businessID, businessName, city, categories))
 
 # Encode average review as 2 if less than 3, or 3 if >= 3 
 temp$averageReviewBusiness <- ifelse(temp$averageReviewBusiness < 3, 2, 3)
@@ -59,7 +61,49 @@ plot(pca$x[pca$sdev == bestPCs, ], col = temp$averageReviewBusiness, xlab = "PC1
 
 SVM: 
 ```{r}
-#svm.mod <- svm(data = temp, avgReviewStars~., kernel = "linear", scale = F, cost = .1)
+#Fit a model. The function syntax is very similar to lm function
+model_svm <- svm(rate ~ reviewCountBusiness + isOpen + percAsian + percBlack + 
+    percHispanic + percNHW + zipPopulation + zipYouthPopulation + 
+    medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + 
+    isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast , az.train)
+ 
+#Use the predictions on the data
+pred <- predict(model_svm, az.train)
+ 
+#Plot the predictions and the plot to see our model fit
+points(az.train$x, pred, col = "blue", pch=4)
+ 
+#Linear model has a residuals part which we can extract and directly calculate rmse
+error <- model$residuals 
+lm_error <- sqrt(mean(error^2)) 
+ 
+#For svm, we have to manually calculate the difference between actual values (train$y) with our predictions (pred)
+error_2 <- az.train$y - pred
+svm_error <- sqrt(mean(error_2^2)) 
+ 
+ 
+# perform a grid search
+svm_tune <- tune(svm,rate ~ reviewCountBusiness + isOpen + percAsian + percBlack + 
+    percHispanic + percNHW + zipPopulation + zipYouthPopulation + 
+    medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + 
+    isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast , data = az.train,
+ ranges = list(epsilon = seq(0,1,0.01), cost = 2^(2:9))
+)
+print(svm_tune)
+ 
+best_mod <- svm_tune$best.model
+best_mod_pred <- predict(best_mod, az.train) 
+ 
+error_best_mod <- az.train$y - best_mod_pred 
+ 
+# this value can be different on your computer
+# because the tune method randomly shuffles the data
+best_mod_RMSE <- sqrt(mean(error_best_mod^2)) 
+ 
+plot(svm_tune)
+ 
+plot(az.train,pch=16)
+points(train$x, best_mod_pred, col = "blue", pch=4)
 
 ```
 
@@ -171,5 +215,21 @@ plot(qda.p, col = "red",main="QDA ROC Curve")
 prediction(qda.predict$posterior[,2], az.test$averageReviewBusiness) %>%
   performance(measure = "auc") %>%
   .@y.values
+```
+
+
+Neural Nets
+
+```{r}
+#define training set
+seedstrain<- az.train
+#define test set
+seedstest <- az.test
+
+ideal <- class.ind(az$avgreviewstars)
+seedsANN <- nnet(az[seedstrain, -44], az[seedstrain, ], size=10, softmax=TRUE)
+
+predict(seedsANN, az[seedstrain,-44], type="rate")
+ table(predict(seedsANN, az[seedstest,-44], type="rate"),seeds[seedstest,]$rate)
 ```
 
