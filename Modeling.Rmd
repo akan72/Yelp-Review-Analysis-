@@ -202,13 +202,13 @@ mean(qda.class != az.test$rate)
 ```
 
 ```{r, echo=FALSE}
-qda.p <- prediction(qda.predict$posterior[,2], az.test$averageReviewBusiness) %>%
+qda.p <- prediction(qda.predict$posterior[,2], az.test$rate) %>%
   performance(measure = "tpr", x.measure = "fpr")
 
 plot(qda.p, col = "red",main="QDA ROC Curve")
 
 #QDA AUC
-prediction(qda.predict$posterior[,2], az.test$averageReviewBusiness) %>%
+prediction(qda.predict$posterior[,2], az.test$rate) %>%
   performance(measure = "auc") %>%
   .@y.values
 ```
