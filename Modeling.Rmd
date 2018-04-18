@@ -31,15 +31,15 @@ temp <- az %>%
     dplyr::select(-c(businessID, businessName, city, categories))
 
 # Encode average review as 2 if less than 3, or 3 if >= 3 
-temp$averageReviewBusiness <- ifelse(temp$averageReviewBusiness < 3, 2, 3)
+#temp$averageReviewBusiness <- ifelse(temp$averageReviewBusiness < 3.5, 0, 1)
 
 #training and test sets
 train <- sample(1:(0.80*nrow(az)),replace=FALSE) 
 az.train <- temp[train,]
 az.test <- temp[-train,]
 
-az.train$rate <- ifelse(az.train$averageReviewBusiness < 3, 0, 1)
-az.test$rate <- ifelse(az.test$averageReviewBusiness < 3, 0, 1)
+az.train$rate <- ifelse(az.train$averageReviewBusiness < 3.5, 0, 1)
+az.test$rate <- ifelse(az.test$averageReviewBusiness < 3.5, 0, 1)
 ```
 
 PCA:
@@ -182,14 +182,13 @@ Now, we will run QDA and look at the test MSE (mean squared error).
 ```
 
 ```{r}
-<<<<<<< HEAD
 qda.fit <- qda(rate~reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation + zipYouthPopulation + medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train)
-=======
+
 qda.fit <- qda(rate ~ reviewCountBusiness + isOpen + percAsian + percBlack + 
     percHispanic + percNHW + zipPopulation + zipYouthPopulation + 
     medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + 
     isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train)
->>>>>>> a77ec3c418c017422d3dc43847fc307da096cb31
+
 qda.fit
 
 #predict QDA on test set
