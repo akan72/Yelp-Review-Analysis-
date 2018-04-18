@@ -98,16 +98,19 @@ plot(1:5, wss,
 # Logistic Regression
 
 ```{r}
-az.train$rate <- ifelse(az.train$averageReviewBusiness < 3, 0, 1)
-az.test$rate <- ifelse(az.test$averageReviewBusiness < 3, 0, 1)
+az.train$rate <- ifelse(az.train$avgReviewStars < 3.5, 0, 1)
+az.test$rate <- ifelse(az.test$avgReviewStars < 3.5, 0, 1)
 
-log.mod <- glm(rate~reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation + zipYouthPopulation + medianIncome + percBachelors + avgDaysSinceJoined, data = az.train, family = binomial)
+log.mod <- glm(rate~reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation + zipYouthPopulation + medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train, family = binomial)
 summary(log.mod)
 
+#confusion matrix
 pred <- predict(log.mod, az.test, type = "response")
 glm.pred <- rep("0", length(pred))
-glm.pred[pred>.5] <- "1"
+glm.pred[pred > .5] <- "1"
 table(glm.pred, az.test$rate)
+
+mean(glm.pred != az.test$rate)
 ```
 
 # Quadratic Discriminant Analysis
@@ -129,17 +132,17 @@ Now, we will run QDA and look at the test MSE (mean squared error).
 ```
 
 ```{r}
-qda.fit <- qda(averageReviewBusiness~reviewCountBusiness, data = az.train)
+qda.fit <- qda(rate~reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation + zipYouthPopulation + medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train)
 qda.fit
 
 #predict QDA on test set
 qda.predict <- predict(qda.fit, newdata=az.test)
 qda.class <- qda.predict$class
 #Confusion matrix
-table(qda.class,az.test$averageReviewBusiness)
+table(qda.class,az.test$rate)
 
 #Overall fraction of incorrect test predictions (MSE: mean squared error)
-mean(qda.class != az.test$averageReviewBusiness)
+mean(qda.class != az.test$rate)
 ```
 
 ```{r, echo=FALSE}
