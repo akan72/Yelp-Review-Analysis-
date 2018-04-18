@@ -32,7 +32,7 @@ temp <- az %>%
 temp$averageReviewBusiness <- ifelse(temp$averageReviewBusiness < 3, 2, 3)
 
 #training and test sets
-train <- sample(1:(0.80*nrow(az)),replace=FALSE)
+train <- sample(1:(0.80*nrow(az)),replace=FALSE) 
 az.train <- temp[train,]
 az.test <- temp[-train,]
 ```
@@ -97,9 +97,19 @@ plot(1:5, wss,
 # confusion matrix 
 ```
 
-Logistic Regression
-```{r}
+# Logistic Regression
 
+```{r}
+az.train$rate <- ifelse(az.train$averageReviewBusiness < 3, 0, 1)
+az.test$rate <- ifelse(az.test$averageReviewBusiness < 3, 0, 1)
+
+log.mod <- glm(rate~reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation + zipYouthPopulation + medianIncome + percBachelors + avgDaysSinceJoined, data = az.train, family = binomial)
+summary(log.mod)
+
+pred <- predict(log.mod, az.test, type = "response")
+glm.pred <- rep("0", length(pred))
+glm.pred[pred>.5] <- "1"
+table(glm.pred, az.test$rate)
 ```
 
 # Quadratic Discriminant Analysis
