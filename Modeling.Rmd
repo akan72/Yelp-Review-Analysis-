@@ -48,8 +48,7 @@ PCA:
 ### More feature selection necessary for PCA 
 par(mfrow = c(1,2))
 
-pca <- prcomp(temp %>% 
-                dplyr::select(-categories))
+pca <- prcomp(temp)
 
 # Sort PCs by highest variance 
 bestPCs <- sort(pca$sdev, decreasing = T)[1:2]
@@ -71,10 +70,10 @@ model_svm <- svm(rate ~ reviewCountBusiness + isOpen + percAsian + percBlack +
 pred <- predict(model_svm, az.train)
  
 #Plot the predictions and the plot to see our model fit
-points(az.train$x, pred, col = "blue", pch=4)
+#points(az.train$x, pred, col = "blue", pch=4)
  
 #Linear model has a residuals part which we can extract and directly calculate rmse
-error <- model$residuals 
+error <- model_svm$residuals 
 lm_error <- sqrt(mean(error^2)) 
  
 #For svm, we have to manually calculate the difference between actual values (train$y) with our predictions (pred)
