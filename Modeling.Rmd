@@ -147,14 +147,11 @@ plot(1:5, wss,
 # Logistic Regression
 
 ```{r}
-<<<<<<< HEAD
 az.train$rate <- ifelse(az.train$avgReviewStars < 3.5, 0, 1)
 az.test$rate <- ifelse(az.test$avgReviewStars < 3.5, 0, 1)
 
 log.mod <- glm(rate~reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation + zipYouthPopulation + medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train, family = binomial)
-=======
-log.mod <- glm(rate~reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation + zipYouthPopulation + medianIncome + percBachelors + avgDaysSinceJoined, data = az.train, family = binomial)
->>>>>>> a77ec3c418c017422d3dc43847fc307da096cb31
+
 summary(log.mod)
 
 #confusion matrix
