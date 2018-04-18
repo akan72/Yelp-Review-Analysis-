@@ -31,15 +31,15 @@ temp <- az %>%
     dplyr::select(-c(businessID, businessName, city, categories))
 
 # Encode average review as 2 if less than 3, or 3 if >= 3 
-temp$averageReviewBusiness <- ifelse(temp$averageReviewBusiness < 3, 2, 3)
+#temp$averageReviewBusiness <- ifelse(temp$averageReviewBusiness < 3.5, 0, 1)
 
 #training and test sets
 train <- sample(1:(0.80*nrow(az)),replace=FALSE) 
 az.train <- temp[train,]
 az.test <- temp[-train,]
 
-az.train$rate <- ifelse(az.train$averageReviewBusiness < 3, 0, 1)
-az.test$rate <- ifelse(az.test$averageReviewBusiness < 3, 0, 1)
+az.train$rate <- ifelse(az.train$averageReviewBusiness < 3.5, 0, 1)
+az.test$rate <- ifelse(az.test$averageReviewBusiness < 3.5, 0, 1)
 ```
 
 PCA:
@@ -146,13 +146,20 @@ plot(1:5, wss,
 # Logistic Regression
 
 ```{r}
-log.mod <- glm(rate~reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation + zipYouthPopulation + medianIncome + percBachelors + avgDaysSinceJoined, data = az.train, family = binomial)
+az.train$rate <- ifelse(az.train$avgReviewStars < 3.5, 0, 1)
+az.test$rate <- ifelse(az.test$avgReviewStars < 3.5, 0, 1)
+
+log.mod <- glm(rate~reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation + zipYouthPopulation + medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train, family = binomial)
+
 summary(log.mod)
 
+#confusion matrix
 pred <- predict(log.mod, az.test, type = "response")
 glm.pred <- rep("0", length(pred))
-glm.pred[pred>.5] <- "1"
+glm.pred[pred > .5] <- "1"
 table(glm.pred, az.test$rate)
+
+mean(glm.pred != az.test$rate)
 ```
 
 # Quadratic Discriminant Analysis
@@ -174,10 +181,13 @@ Now, we will run QDA and look at the test MSE (mean squared error).
 ```
 
 ```{r}
+qda.fit <- qda(rate~reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation + zipYouthPopulation + medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train)
+
 qda.fit <- qda(rate ~ reviewCountBusiness + isOpen + percAsian + percBlack + 
     percHispanic + percNHW + zipPopulation + zipYouthPopulation + 
     medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + 
     isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train)
+
 qda.fit
 
 #predict QDA on test set
@@ -191,13 +201,13 @@ mean(qda.class != az.test$rate)
 ```
 
 ```{r, echo=FALSE}
-qda.p <- prediction(qda.predict$posterior[,2], az.test$averageReviewBusiness) %>%
+qda.p <- prediction(qda.predict$posterior[,2], az.test$rate) %>%
   performance(measure = "tpr", x.measure = "fpr")
 
 plot(qda.p, col = "red",main="QDA ROC Curve")
 
 #QDA AUC
-prediction(qda.predict$posterior[,2], az.test$averageReviewBusiness) %>%
+prediction(qda.predict$posterior[,2], az.test$rate) %>%
   performance(measure = "auc") %>%
   .@y.values
 ```
