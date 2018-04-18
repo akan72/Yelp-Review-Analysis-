@@ -10,11 +10,15 @@ output:
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(leaflet)
+library(rgdal)
 ```
 
 ```{r}
 az <- read.csv("data/phoenixAg.csv")
 az$businessName <- gsub("\"", "", az$businessName)
+
+zips <- readOGR("data/zipcodes.shp",
+  layer = "zipcodes", GDAL1_integer64_policy = F)
 ```
 
 ```{r}
