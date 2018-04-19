@@ -264,12 +264,13 @@ predict(seedsANN, az[seedstrain,-44], type="rate")
 
 # Naive Bayes
 ```{r}
-require(e1071) #Holds the Naive Bayes Classifier
+#require(e1071) Holds the Naive Bayes Classifier
 az.train
 az.test
 #Make sure the target variable is of a two-class classification problem only
 
 levels(az.train$rate)
+levels(az.test$rate)
 
 
 bayes.mod <- naiveBayes(rate ~ reviewCountBusiness + isOpen + percAsian + percBlack 
@@ -277,16 +278,10 @@ bayes.mod <- naiveBayes(rate ~ reviewCountBusiness + isOpen + percAsian + percBl
                         + medianIncome + percBachelors + avgDaysSinceJoined + 
                           isFastFood + isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train)
 class(bayes.mod) 
+
 pred <- predict(bayes.mod,az.test$rate)
 
-model <- naiveBayes(rate~reviewCountBusiness + isOpen + percAsian + percBlack + 
-    percHispanic + percNHW + zipPopulation + zipYouthPopulation + 
-    medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + 
-    isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train)
-class(model) 
-pred <- predict(model,az.test)
-
-table(pred)
+table(pred, az.test$rate)
 
 mean(pred!=az.test$rate)
 
