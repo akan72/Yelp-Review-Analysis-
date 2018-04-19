@@ -42,7 +42,7 @@ az.train$rate <- ifelse(az.train$averageReviewBusiness < 3.5, 0, 1)
 az.test$rate <- ifelse(az.test$averageReviewBusiness < 3.5, 0, 1)
 ```
 
-PCA:
+# PCA:
 ```{r, warning = F }
 
 ### More feature selection necessary for PCA 
@@ -58,7 +58,7 @@ plot(pca$x[pca$sdev == bestPCs, ], col = temp$averageReviewBusiness, xlab = "PC1
 
 ```
 
-SVM: 
+# SVM: 
 ```{r}
 #Fit a model. The function syntax is very similar to lm function
 model_svm <- svm(rate ~ reviewCountBusiness + isOpen + percAsian + percBlack + 
@@ -106,7 +106,7 @@ points(train$x, best_mod_pred, col = "blue", pch=4)
 
 ```
 
-Decision Trees: 
+# Decision Trees: 
 ```{r}
 tree.mod <- tree(data = temp %>% 
                      dplyr::select(-c(averageReviewBusiness, avgUserPastReview, categories)), avgReviewStars ~.)
@@ -120,7 +120,7 @@ plot(tree.mod)
 text(tree.mod, pretty = 0)
 ```
 
-Kmeans: 
+# Kmeans: 
 
 K means supports our justification for splitting reviews into two categories (<3 and >=3). The "elbow" point on the Error vs. K (# of clusters) plot provides evidence.
 ```{r}
@@ -160,6 +160,21 @@ glm.pred[pred > .5] <- "1"
 table(glm.pred, az.test$rate)
 
 mean(glm.pred != az.test$rate)
+
+roc <- prediction(pred, az.test$rate)
+rocperf <- performance(roc, 'tpr', 'fpr')
+plot(rocperf, colorize = TRUE)
+
+
+#ROCR Curve
+library(ROCR)
+ROCRpred <- prediction(predict, dresstrain$Recommended)
+ROCRperf <- performance(ROCRpred, 'tpr','fpr')
+plot(ROCRperf, colorize = TRUE, text.adj = c(-0.2,1.7))
+#plot glm
+library(ggplot2)
+ggplot(dresstrain, aes(x=Rating, y=Recommended)) + geom_point() + 
+stat_smooth(method="glm", family="binomial", se=FALSE)
 ```
 
 # Quadratic Discriminant Analysis
