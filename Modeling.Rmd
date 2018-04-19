@@ -52,7 +52,7 @@ mod <- rate ~ reviewCountBusiness + isOpen + percAsian + percBlack +
 
 ```
 
-PCA:
+# PCA:
 ```{r, warning = F }
 
 ### More feature selection necessary for PCA 
@@ -68,7 +68,7 @@ plot(pca$x[pca$sdev == bestPCs, ], col = az.train$avgReviewStars, xlab = "PC1", 
 
 ```
 
-SVM: 
+# SVM: 
 ```{r}
 #Fit a model. The function syntax is very similar to lm function
 model_svm <- svm(mod, az.train, kernel = "radial")
@@ -111,7 +111,7 @@ points(train$x, best_mod_pred, col = "blue", pch=4)
 
 ```
 
-Decision Trees: 
+# Decision Trees: 
 ```{r}
 tree.mod <- tree(data = az.train, 
                    rate ~ reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation +
@@ -127,12 +127,16 @@ plot(tree.mod)
 text(tree.mod, pretty = 0)
 ```
 
+<<<<<<< HEAD
 Random Forest 
 ```{r}
 
 ```
 
 Kmeans: 
+=======
+# Kmeans: 
+>>>>>>> 66f67c2a186358111360b19da6682b42148fea02
 
 K means supports our justification for splitting reviews into two categories (<3 and >=3). The "elbow" point on the Error vs. K (# of clusters) plot provides evidence.
 ```{r}
@@ -218,8 +222,18 @@ prediction(qda.predict$posterior[,2], az.test$rate) %>%
   .@y.values
 ```
 
+```{r}
+#ROC Curves for LogReg & QDA
 
-Neural Nets
+roc <- prediction(pred, az.test$rate)
+rocperf <- performance(roc, 'tpr', 'fpr')
+plot(rocperf, colorize = T)
+plot(qda.p, add = T, colorize = T)
+```
+
+
+
+# Neural Nets
 
 ```{r}
 #define training set
