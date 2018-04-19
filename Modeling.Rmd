@@ -50,6 +50,8 @@ mod <- rate ~ reviewCountBusiness + isOpen + percAsian + percBlack +
     medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + 
     isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast 
 
+az.train$rate <- as.factor(az.train$rate)
+az.test$rate <- as.factor(az.test$rate)
 ```
 
 # PCA:
@@ -127,14 +129,14 @@ plot(tree.mod)
 text(tree.mod, pretty = 0)
 ```
 
-<<<<<<< HEAD
+
 Random Forest 
 ```{r}
 
 ```
 
 Kmeans: 
-=======
+
 # Kmeans: 
 >>>>>>> 66f67c2a186358111360b19da6682b42148fea02
 
@@ -191,7 +193,10 @@ Now, we will run QDA and look at the test MSE (mean squared error).
 ```
 
 ```{r}
+
+
 qda.fit <- qda(mod, data = az.train)
+
 
 qda.fit <- qda(rate ~ reviewCountBusiness + isOpen + percAsian + percBlack + 
     percHispanic + percNHW + zipPopulation + zipYouthPopulation + 
@@ -208,6 +213,7 @@ table(qda.class,az.test$rate)
 
 #Overall fraction of incorrect test predictions (MSE: mean squared error)
 mean(qda.class != az.test$rate)
+
 ```
 
 ```{r, echo=FALSE}
@@ -227,11 +233,14 @@ prediction(qda.predict$posterior[,2], az.test$rate) %>%
 
 roc <- prediction(pred, az.test$rate)
 rocperf <- performance(roc, 'tpr', 'fpr')
+
+plot(rocperf, colorize = T)
+plot(qda.p, add = T, colorize = F)
+
 plot(rocperf, colorize = T, main = "LogReg ROC Curve")
 
+
 ```
-
-
 
 # Neural Nets
 
@@ -252,6 +261,31 @@ predict(seedsANN, az[seedstrain,-44], type="rate")
  table(predict(seedsANN, az[seedstest,-44], type="rate"),seeds[seedstest,]$rate)
 ```
 
+
+# Naive Bayes
+```{r}
+#require(e1071) Holds the Naive Bayes Classifier
+az.train
+az.test
+#Make sure the target variable is of a two-class classification problem only
+
+levels(az.train$rate)
+levels(az.test$rate)
+
+
+bayes.mod <- naiveBayes(rate ~ reviewCountBusiness + isOpen + percAsian + percBlack 
+                        + percHispanic + percNHW + zipPopulation + zipYouthPopulation 
+                        + medianIncome + percBachelors + avgDaysSinceJoined + 
+                          isFastFood + isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train)
+class(bayes.mod) 
+
+pred <- predict(bayes.mod,az.test$rate)
+
+table(pred, az.test$rate)
+
+mean(pred!=az.test$rate)
+
+```
 
 ```{r}
 
