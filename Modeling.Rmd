@@ -18,28 +18,38 @@ library(tree)
 library(MASS)
 library(ROCR)
 
+library(randomForest)
 library(nnet)
 
+library(tfestimators)
+library(reticulate)
+
+library(mlr)
+
 set.seed(1)
+
 ```
 
 ```{r}
 az <- read.csv("data/phoenixAg.csv")
 az$businessName <- gsub("\"", "", az$businessName )
 
-temp <- az %>% 
-    dplyr::select(-c(businessID, businessName, city, categories))
-
 # Encode average review as 2 if less than 3, or 3 if >= 3 
 #temp$averageReviewBusiness <- ifelse(temp$averageReviewBusiness < 3.5, 0, 1)
 
 #training and test sets
 train <- sample(1:(0.80*nrow(az)),replace=FALSE) 
-az.train <- temp[train,]
-az.test <- temp[-train,]
+az.train <- az[train,]
+az.test <- az[-train,]
 
-az.train$rate <- ifelse(az.train$averageReviewBusiness < 3.5, 0, 1)
-az.test$rate <- ifelse(az.test$averageReviewBusiness < 3.5, 0, 1)
+az.train$rate <- ifelse(az.train$avgReviewStars <= 3.5, 0, 1)
+az.test$rate <- ifelse(az.test$avgReviewStars <= 3.5, 0, 1)
+
+mod <- rate ~ reviewCountBusiness + isOpen + percAsian + percBlack + 
+    percHispanic + percNHW + zipPopulation + zipYouthPopulation + 
+    medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + 
+    isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast 
+
 ```
 
 PCA:
@@ -48,23 +58,20 @@ PCA:
 ### More feature selection necessary for PCA 
 par(mfrow = c(1,2))
 
-pca <- prcomp(temp)
+pca <- prcomp(az.train)
 
 # Sort PCs by highest variance 
 bestPCs <- sort(pca$sdev, decreasing = T)[1:2]
 
-plot(pca$x[,], col = temp$averageReviewBusiness, xlab = "PC1", ylab = "PC2", main = "All PCs")
-plot(pca$x[pca$sdev == bestPCs, ], col = temp$averageReviewBusiness, xlab = "PC1", ylab = "PC2", main = "Two Highest Variance")
+plot(pca$x[,], col = az.train$avgReviewStars, xlab = "PC1", ylab = "PC2", main = "All PCs")
+plot(pca$x[pca$sdev == bestPCs, ], col = az.train$avgReviewStars, xlab = "PC1", ylab = "PC2", main = "Two Highest Variance")
 
 ```
 
 SVM: 
 ```{r}
 #Fit a model. The function syntax is very similar to lm function
-model_svm <- svm(rate ~ reviewCountBusiness + isOpen + percAsian + percBlack + 
-    percHispanic + percNHW + zipPopulation + zipYouthPopulation + 
-    medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + 
-    isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast , az.train)
+model_svm <- svm(mod, az.train, kernel = "radial")
  
 #Use the predictions on the data
 pred <- predict(model_svm, az.train)
@@ -82,12 +89,10 @@ svm_error <- sqrt(mean(error_2^2))
  
  
 # perform a grid search
-svm_tune <- tune(svm,rate ~ reviewCountBusiness + isOpen + percAsian + percBlack + 
-    percHispanic + percNHW + zipPopulation + zipYouthPopulation + 
-    medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + 
-    isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast , data = az.train,
+svm_tune <- tune(svm, mod, data = az.train, kernel = "radial",
  ranges = list(epsilon = seq(0,1,0.01), cost = 2^(2:9))
 )
+
 print(svm_tune)
  
 best_mod <- svm_tune$best.model
@@ -108,8 +113,10 @@ points(train$x, best_mod_pred, col = "blue", pch=4)
 
 Decision Trees: 
 ```{r}
-tree.mod <- tree(data = temp %>% 
-                     dplyr::select(-c(averageReviewBusiness, avgUserPastReview, categories)), avgReviewStars ~.)
+tree.mod <- tree(data = az.train, 
+                   rate ~ reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation +
+                   zipYouthPopulation + medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + 
+                   isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast)
 
 #plot(tree(data = temp,
 #     as.formula(paste("avgReviewStars", "~",
@@ -120,18 +127,19 @@ plot(tree.mod)
 text(tree.mod, pretty = 0)
 ```
 
+Random Forest 
+```{r}
+
+```
+
 Kmeans: 
 
 K means supports our justification for splitting reviews into two categories (<3 and >=3). The "elbow" point on the Error vs. K (# of clusters) plot provides evidence.
 ```{r}
-# euclidianGene <- as.data.frame(cbind(euclidianMeans$cluster, Subtypes))
-
-# Drop start labels and then perform kmeans 
-
 # See if k = 5 clusters best models the 5 different star levels
 wss <- sapply(1:5, 
               function(k){kmeans((temp %>% 
-                                   dplyr::select(-c(averageReviewBusiness, categories))), k, nstart = 25)$tot.withinss})
+                                   dplyr::select(-c(averageReviewBusiness))), k, nstart = 25)$tot.withinss})
 
 plot(1:5, wss,
      type="b", pch = 19, frame = FALSE, 
@@ -146,14 +154,12 @@ plot(1:5, wss,
 # Logistic Regression
 
 ```{r}
-az.train$rate <- ifelse(az.train$avgReviewStars < 3.5, 0, 1)
-az.test$rate <- ifelse(az.test$avgReviewStars < 3.5, 0, 1)
-
-log.mod <- glm(rate~reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation + zipYouthPopulation + medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train, family = binomial)
+log.mod <- glm(mod, data = az.train, family = binomial)
 
 summary(log.mod)
 
-#confusion matrix
+# confusion matrix
+
 pred <- predict(log.mod, az.test, type = "response")
 glm.pred <- rep("0", length(pred))
 glm.pred[pred > .5] <- "1"
@@ -181,7 +187,7 @@ Now, we will run QDA and look at the test MSE (mean squared error).
 ```
 
 ```{r}
-qda.fit <- qda(rate~reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation + zipYouthPopulation + medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train)
+qda.fit <- qda(mod, data = az.train)
 
 qda.fit <- qda(rate ~ reviewCountBusiness + isOpen + percAsian + percBlack + 
     percHispanic + percNHW + zipPopulation + zipYouthPopulation + 
@@ -221,10 +227,105 @@ seedstrain<- az.train
 #define test set
 seedstest <- az.test
 
-ideal <- class.ind(az$avgreviewstars)
-seedsANN <- nnet(az[seedstrain, -44], az[seedstrain, ], size=10, softmax=TRUE)
+ideal <- class.ind(az$rate)
+
+response <- as.factor(seedstrain$rate)
+predictors <- seedstrain %>% dplyr::select(-rate)
+
+seedsANN <- nnet(predictors, response, size=10, softmax = T, linout= T)
 
 predict(seedsANN, az[seedstrain,-44], type="rate")
  table(predict(seedsANN, az[seedstest,-44], type="rate"),seeds[seedstest,]$rate)
+```
+
+
+```{r}
+
+az <- az %>% 
+  dplyr::select(-c(businessID, categories, city))
+
+response <- function() "avgReviewStars"
+features <- function() setdiff(names(az), response())
+
+# split into train, test datasets
+partitions <- modelr::resample_partition(az, c(test = 0.2, train = 0.8))
+az_train <- as.data.frame(partitions$train)
+az_test  <- as.data.frame(partitions$test)
+
+# construct feature columns
+feature_columns <- feature_columns(
+  column_numeric(features())
+)
+
+# construct classifier
+classifier <- dnn_classifier(
+  feature_columns = feature_columns,
+  hidden_units = c(10, 20, 10),
+  n_classes = 3
+)
+
+# construct input function 
+iris_input_fn <- function(data) {
+  input_fn(data, features = features(), response = response())
+}
+
+# train classifier with training dataset
+train(classifier, input_fn = iris_input_fn(az_train))
+
+# valuate with test dataset
+predictions <- predict(classifier, input_fn = iris_input_fn(az_test))
+evaluation <- evaluate(classifier, input_fn = iris_input_fn(az_test))
+```
+
+Naive Bayes
+
+
+```{r}
+
+az.train <- az.train %>% 
+  dplyr::select(-c(businessID, categories, city, businessName))
+
+
+az.test <- az.test %>% 
+  dplyr::select(-c(businessID, categories, city, businessName))
+#Creating data from table
+#repeating_sequence <- rep.int(seq_len(nrow(az.train)), az.train$Freq) #This will repeat each combination equal to the frequency of each combination
+ 
+#Create the dataset by row repetition created
+#az.train <- az.train[repeating_sequence,]
+#We no longer need the frequency, drop the feature
+#az.train$Freq <- NULL
+ 
+#Fitting the Naive Bayes model
+Naive_Bayes_Model <- naiveBayes(mod, data=az.train)
+#What does the model say? Print the model summary
+Naive_Bayes_Model
+ 
+#Prediction on the dataset
+NB_Predictions <- predict(Naive_Bayes_Model, az.test$rate)
+NB_Predictions
+#Confusion matrix to check accuracy
+table(NB_Predictions, az.test$rate)
+ 
+#Getting started with Naive Bayes in mlr
+
+ 
+#Create a classification task for learning on Titanic Dataset and specify the target feature
+task <- makeClassifTask(data = az.train, target = "rate")
+ 
+#Initialize the Naive Bayes classifier
+selected_model <- makeLearner("classif.naiveBayes")
+ 
+#Train the model
+NB_mlr <- train(selected_model, task)
+ 
+#Read the model learned  
+NB_mlr$learner.model
+ 
+#Predict on the dataset without passing the target feature
+predictions_mlr <- as.data.frame(predict(NB_mlr, newdata = az.train[,1:3]))
+ 
+##Confusion matrix to check accuracy
+table(predictions_mlr[,1],az.train$Survived)
 ```
 
