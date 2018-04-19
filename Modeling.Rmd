@@ -40,6 +40,9 @@ az.test <- temp[-train,]
 
 az.train$rate <- ifelse(az.train$averageReviewBusiness < 3.5, 0, 1)
 az.test$rate <- ifelse(az.test$averageReviewBusiness < 3.5, 0, 1)
+
+az.train$rate <- as.factor(az.train$rate)
+az.test$rate <- as.factor(az.test$rate)
 ```
 
 # PCA:
@@ -243,8 +246,6 @@ az.test
 #Make sure the target variable is of a two-class classification problem only
 
 levels(az.train$rate)
-az.train$rate <- as.factor(az.train$rate)
-az.test$rate <- as.factor(az.test$rate)
 
 model <- naiveBayes(rate~., data = az.train)
 class(model) 
