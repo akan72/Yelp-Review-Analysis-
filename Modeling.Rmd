@@ -160,21 +160,6 @@ glm.pred[pred > .5] <- "1"
 table(glm.pred, az.test$rate)
 
 mean(glm.pred != az.test$rate)
-
-roc <- prediction(pred, az.test$rate)
-rocperf <- performance(roc, 'tpr', 'fpr')
-plot(rocperf, colorize = TRUE)
-
-
-#ROCR Curve
-library(ROCR)
-ROCRpred <- prediction(predict, dresstrain$Recommended)
-ROCRperf <- performance(ROCRpred, 'tpr','fpr')
-plot(ROCRperf, colorize = TRUE, text.adj = c(-0.2,1.7))
-#plot glm
-library(ggplot2)
-ggplot(dresstrain, aes(x=Rating, y=Recommended)) + geom_point() + 
-stat_smooth(method="glm", family="binomial", se=FALSE)
 ```
 
 # Quadratic Discriminant Analysis
@@ -227,8 +212,18 @@ prediction(qda.predict$posterior[,2], az.test$rate) %>%
   .@y.values
 ```
 
+```{r}
+#ROC Curves for LogReg & QDA
 
-Neural Nets
+roc <- prediction(pred, az.test$rate)
+rocperf <- performance(roc, 'tpr', 'fpr')
+plot(rocperf, colorize = T)
+plot(qda.p, add = T, colorize = T)
+```
+
+
+
+# Neural Nets
 
 ```{r}
 #define training set
