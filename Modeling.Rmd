@@ -265,7 +265,7 @@ predict(seedsANN, az[seedstrain,-44], type="rate")
  table(predict(seedsANN, az[seedstest,-44], type="rate"),seeds[seedstest,]$rate)
 ```
 
-<<<<<<< HEAD
+
 # Naive Bayes
 ```{r}
 require(e1071) #Holds the Naive Bayes Classifier
@@ -275,7 +275,10 @@ az.test
 
 levels(az.train$rate)
 
-model <- naiveBayes(rate~., data = az.train)
+model <- naiveBayes(rate~reviewCountBusiness + isOpen + percAsian + percBlack + 
+    percHispanic + percNHW + zipPopulation + zipYouthPopulation + 
+    medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + 
+    isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train)
 class(model) 
 pred <- predict(model,az.test)
 table(pred)
