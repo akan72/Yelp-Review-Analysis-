@@ -182,8 +182,6 @@ Now, we will run QDA and look at the test MSE (mean squared error).
 ```
 
 ```{r}
-qda.fit <- qda(rate~reviewCountBusiness + isOpen + percAsian + percBlack + percHispanic + percNHW + zipPopulation + zipYouthPopulation + medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train, CV=TRUE)
-
 qda.fit <- qda(rate ~ reviewCountBusiness + isOpen + percAsian + percBlack + 
     percHispanic + percNHW + zipPopulation + zipYouthPopulation + 
     medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + 
