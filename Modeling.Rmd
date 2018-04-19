@@ -271,12 +271,21 @@ az.test
 
 levels(az.train$rate)
 
+
 bayes.mod <- naiveBayes(rate ~ reviewCountBusiness + isOpen + percAsian + percBlack 
                         + percHispanic + percNHW + zipPopulation + zipYouthPopulation 
                         + medianIncome + percBachelors + avgDaysSinceJoined + 
                           isFastFood + isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train)
 class(bayes.mod) 
 pred <- predict(bayes.mod,az.test$rate)
+
+model <- naiveBayes(rate~reviewCountBusiness + isOpen + percAsian + percBlack + 
+    percHispanic + percNHW + zipPopulation + zipYouthPopulation + 
+    medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + 
+    isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train)
+class(model) 
+pred <- predict(model,az.test)
+
 table(pred)
 
 mean(pred!=az.test$rate)
