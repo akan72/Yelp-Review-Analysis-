@@ -291,8 +291,8 @@ predictions <- predict(classifier, input_fn = iris_input_fn(az_test))
 evaluation <- evaluate(classifier, input_fn = iris_input_fn(az_test))
 ```
 
-Naive Bayes
 
+# Naive Bayes
 
 ```{r}
 
@@ -341,5 +341,21 @@ predictions_mlr <- as.data.frame(predict(NB_mlr, newdata = az.train[,1:3]))
  
 ##Confusion matrix to check accuracy
 table(predictions_mlr[,1],az.train$Survived)
+```
+
+```{r}
+require(e1071) #Holds the Naive Bayes Classifier
+
+#Make sure the target variable is of a two-class classification problem only
+
+
+levels(az.train$rate)
+
+model <- naiveBayes(mod, data = az.train)
+class(model) 
+pred <- predict(model,az.test$rate)
+table(pred)
+
+mean(pred != az.test$rate)
 ```
 
