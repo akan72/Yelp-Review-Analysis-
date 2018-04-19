@@ -50,10 +50,6 @@ mod <- rate ~ reviewCountBusiness + isOpen + percAsian + percBlack +
     medianIncome + percBachelors + avgDaysSinceJoined + isFastFood + 
     isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast 
 
-
-az.train$rate <- ifelse(az.train$averageReviewBusiness < 3.5, 0, 1)
-az.test$rate <- ifelse(az.test$averageReviewBusiness < 3.5, 0, 1)
-
 az.train$rate <- as.factor(az.train$rate)
 az.test$rate <- as.factor(az.test$rate)
 ```
@@ -265,7 +261,7 @@ predict(seedsANN, az[seedstrain,-44], type="rate")
  table(predict(seedsANN, az[seedstest,-44], type="rate"),seeds[seedstest,]$rate)
 ```
 
-<<<<<<< HEAD
+
 # Naive Bayes
 ```{r}
 require(e1071) #Holds the Naive Bayes Classifier
@@ -275,9 +271,12 @@ az.test
 
 levels(az.train$rate)
 
-model <- naiveBayes(rate~., data = az.train)
-class(model) 
-pred <- predict(model,az.test)
+bayes.mod <- naiveBayes(rate ~ reviewCountBusiness + isOpen + percAsian + percBlack 
+                        + percHispanic + percNHW + zipPopulation + zipYouthPopulation 
+                        + medianIncome + percBachelors + avgDaysSinceJoined + 
+                          isFastFood + isItalian + isHispanic + isAsian + isAmerican + isBar + isBreakfast, data = az.train)
+class(bayes.mod) 
+pred <- predict(bayes.mod,az.test$rate)
 table(pred)
 
 mean(pred!=az.test$rate)
