@@ -204,7 +204,7 @@ mean(qda.class != az.test$rate)
 qda.p <- prediction(qda.predict$posterior[,2], az.test$rate) %>%
   performance(measure = "tpr", x.measure = "fpr")
 
-plot(qda.p, col = "red",main="QDA ROC Curve")
+plot(qda.p, colorize = T, main="QDA ROC Curve")
 
 #QDA AUC
 prediction(qda.predict$posterior[,2], az.test$rate) %>%
@@ -217,8 +217,8 @@ prediction(qda.predict$posterior[,2], az.test$rate) %>%
 
 roc <- prediction(pred, az.test$rate)
 rocperf <- performance(roc, 'tpr', 'fpr')
-plot(rocperf, colorize = T)
-plot(qda.p, add = T, colorize = T)
+plot(rocperf, colorize = T, main = "LogReg ROC Curve")
+
 ```
 
 
