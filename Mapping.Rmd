@@ -22,14 +22,22 @@ az$businessName <- gsub("\"", "", az$businessName)
 ```
 
 ```{r}
-m <- leaflet() %>%
+m1 <- leaflet() %>%
   addTiles() %>%
-  addMarkers(lng=az$long[1:20], lat=az$lat[1:20], label = az$businessName[1:20]) %>%
+  addMarkers(lng=az$long[1:150], lat=az$lat[1:150], label = az$businessName[1:150]) %>%
   setView(mean(az$long), mean(az$lat), zoom = 10)
 
-# clusterOptions = markerClusterOptions() within marker 
 # %>% fitBounds(lng1 = min(az$long), lng2 = max(az$long), lat1 = min(az$lat), lat2 = max(az$lat))
 
-m
+m1
+
+m2 <- leaflet() %>%
+  addTiles() %>%
+  addMarkers(lng=az$long[1:2000], lat=az$lat[1:2000], label = az$businessName[1:2000], clusterOptions = 
+  markerClusterOptions()) %>%
+  setView(mean(az$long), mean(az$lat), zoom = 10)
+
+m2
+
 ```
 
