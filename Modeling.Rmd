@@ -54,64 +54,6 @@ az.train$rate <- as.factor(az.train$rate)
 az.test$rate <- as.factor(az.test$rate)
 ```
 
-# PCA:
-```{r, warning = F }
-
-### More feature selection necessary for PCA 
-par(mfrow = c(1,2))
-
-pca <- prcomp(az.train)
-
-# Sort PCs by highest variance 
-bestPCs <- sort(pca$sdev, decreasing = T)[1:2]
-
-plot(pca$x[,], col = az.train$avgReviewStars, xlab = "PC1", ylab = "PC2", main = "All PCs")
-plot(pca$x[pca$sdev == bestPCs, ], col = az.train$avgReviewStars, xlab = "PC1", ylab = "PC2", main = "Two Highest Variance")
-
-```
-
-# SVM: 
-```{r}
-#Fit a model. The function syntax is very similar to lm function
-model_svm <- svm(mod, az.train, kernel = "radial")
- 
-#Use the predictions on the data
-pred <- predict(model_svm, az.train)
- 
-#Plot the predictions and the plot to see our model fit
-#points(az.train$x, pred, col = "blue", pch=4)
- 
-#Linear model has a residuals part which we can extract and directly calculate rmse
-error <- model_svm$residuals 
-lm_error <- sqrt(mean(error^2)) 
- 
-#For svm, we have to manually calculate the difference between actual values (train$y) with our predictions (pred)
-error_2 <- az.train$y - pred
-svm_error <- sqrt(mean(error_2^2)) 
- 
- 
-# perform a grid search
-svm_tune <- tune(svm, mod, data = az.train, kernel = "radial",
- ranges = list(epsilon = seq(0,1,0.01), cost = 2^(2:9))
-)
-
-print(svm_tune)
- 
-best_mod <- svm_tune$best.model
-best_mod_pred <- predict(best_mod, az.train) 
- 
-error_best_mod <- az.train$y - best_mod_pred 
- 
-# this value can be different on your computer
-# because the tune method randomly shuffles the data
-best_mod_RMSE <- sqrt(mean(error_best_mod^2)) 
- 
-plot(svm_tune)
- 
-plot(az.train,pch=16)
-points(train$x, best_mod_pred, col = "blue", pch=4)
-
-```
 
 # Decision Trees: 
 ```{r}
@@ -135,10 +77,8 @@ Random Forest
 
 ```
 
-Kmeans: 
 
 # Kmeans: 
->>>>>>> 66f67c2a186358111360b19da6682b42148fea02
 
 K means supports our justification for splitting reviews into two categories (<3 and >=3). The "elbow" point on the Error vs. K (# of clusters) plot provides evidence.
 ```{r}
@@ -265,8 +205,8 @@ predict(seedsANN, az[seedstrain,-44], type="rate")
 # Naive Bayes
 ```{r}
 #require(e1071) Holds the Naive Bayes Classifier
-az.train
-az.test
+head(az.train)
+head(az.test)
 #Make sure the target variable is of a two-class classification problem only
 
 levels(az.train$rate)
@@ -325,8 +265,6 @@ predictions <- predict(classifier, input_fn = iris_input_fn(az_test))
 evaluation <- evaluate(classifier, input_fn = iris_input_fn(az_test))
 ```
 
-
-# Naive Bayes
 
 ```{r}
 
