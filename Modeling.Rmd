@@ -288,6 +288,21 @@ mean(pred!=az.test$rate)
 ```
 
 ```{r}
+#Naive Bayes ROC Curve
+pvec <- ifelse(pred==1,1,0)
+vvec <- ifelse(az.test$rate==1,1,0)
+mpred <- prediction(pvec, vvec)
+perf <- performance(mpred, "tpr", "fpr")
+plot(perf, main = "ROC curve for Naive Bayes Classifier",col = "blue", lwd = 3)
+abline(a = 0, b = 1, lwd = 2, lty = 2)
+
+#AUC
+perf.auc <- performance(mpred, measure = "auc")
+unlist(perf.auc@y.values)
+```
+
+
+```{r}
 
 az <- az %>% 
   dplyr::select(-c(businessID, categories, city))
